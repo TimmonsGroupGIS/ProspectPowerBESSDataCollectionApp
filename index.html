@@ -373,7 +373,7 @@
                 while (true) {
                     const url = new URL('https://graph.mapillary.com/images');
                     url.searchParams.set('access_token', TOKEN);
-                    url.searchParams.set('fields', 'id,geometry,sequence,captured_at,is_pano,creator_username');
+                    url.searchParams.set('fields', 'id,geometry,sequence,captured_at,is_pano');
                     url.searchParams.set('creator_username', USERNAME);
                     url.searchParams.set('limit', 2000);
                     if (after) url.searchParams.set('after', after);
@@ -389,15 +389,14 @@
                     const images = data.data || [];
                     console.log(`Got ${images.length} images`);
                     
-                        // Filter for 360 images only
-                        if (!img.is_pano) {
-                            return false;
-                        }
-                        // Date range filter
+                    if (images.length === 0) break;
+                    
+                    const filtered = images.filter(img => {
+                        if (!img.captured_at) return false;
                         let capturedTime = typeof img.captured_at === 'number' ? 
                             img.captured_at : Date.parse(img.captured_at);
                         return capturedTime >= startTime && capturedTime < endTime;
-                    };
+                    });
                     
                     console.log(`Filtered to ${filtered.length} images in date range`);
                     allImages = allImages.concat(filtered);
@@ -721,22 +720,20 @@
 
         // Toggle mini map expansion
         document.getElementById('expand-minimap-btn').addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent event bubbling
+            e.stopPropagation();
             const miniMapElement = document.getElementById('mini-map');
             const expandBtn = document.getElementById('expand-minimap-btn');
             
             miniMapElement.classList.toggle('expanded');
             
-            // Change icon based on state
             if (miniMapElement.classList.contains('expanded')) {
-                expandBtn.textContent = '⛶'; // Could also use '✕' or '◱'
+                expandBtn.textContent = '⛶';
                 expandBtn.title = 'Collapse Map';
             } else {
                 expandBtn.textContent = '⛶';
                 expandBtn.title = 'Expand Map';
             }
             
-            // Resize the map after transition completes
             setTimeout(() => {
                 miniMap.resize();
             }, 300);
