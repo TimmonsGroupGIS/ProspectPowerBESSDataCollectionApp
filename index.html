@@ -389,25 +389,10 @@
                     const images = data.data || [];
                     console.log(`Got ${images.length} images`);
                     
-                    // Debug: Log unique usernames in the response
-                    const usernames = new Set(images.map(img => img.creator_username).filter(Boolean));
-                    if (usernames.size > 0) {
-                        console.log('Usernames in response:', Array.from(usernames));
-                    }
-                    
-                    if (images.length === 0) break;
-                    
-                    const filtered = images.filter(img => {
-                        if (!img.captured_at) return false;
-                        // Explicitly check username matches
-                        if (img.creator_username && img.creator_username !== USERNAME) {
-                            console.log(`Filtering out image from user: ${img.creator_username}`);
+                        // Filter for 360 images only
+                        if (!img.is_pano) {
                             return false;
                         }
-                        // Filter for 360 images only
-                        //if (!img.is_pano) {
-                            //return false;
-                        //}
                         // Date range filter
                         let capturedTime = typeof img.captured_at === 'number' ? 
                             img.captured_at : Date.parse(img.captured_at);
