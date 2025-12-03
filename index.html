@@ -314,7 +314,7 @@
         </div>
         
         <div id="arcgis-container">
-            <iframe id="arcgis-map" src="https://timmons-group.maps.arcgis.com/apps/mapviewer/index.html?webmap=0484af3344864b0cbc5e201b6aec62d1"></iframe>
+            <iframe id="arcgis-map" src="https://timmons-group.maps.arcgis.com/apps/mapviewer/index.html?webmap=e6901b2220db4538bc617150c145efe6"></iframe>
             <div id="arcgis-overlay">
                 <div id="crosshair-container">
                     <svg id="crosshair-svg" viewBox="0 0 100 100">
@@ -754,7 +754,7 @@
                 
                 const iframe = document.getElementById('arcgis-map');
                 const baseUrl = 'https://timmons-group.maps.arcgis.com/apps/mapviewer/index.html';
-                const newUrl = `${baseUrl}?webmap=0484af3344864b0cbc5e201b6aec62d1&center=${pos.lng},${pos.lat}&level=${arcgisZoom}`;
+                const newUrl = `${baseUrl}?webmap=e6901b2220db4538bc617150c145efe6&center=${pos.lng},${pos.lat}&level=${arcgisZoom}`;
                 iframe.src = newUrl;
                 
                 const btn = document.getElementById('sync-btn');
@@ -777,7 +777,7 @@
                 const arcgisZoom = 20;
                 
                 const baseUrl = 'https://timmons-group.maps.arcgis.com/apps/webeditor/index.html';
-                const editorUrl = `${baseUrl}?webmap=0484af3344864b0cbc5e201b6aec62d1&center=${pos.lng},${pos.lat}&level=${arcgisZoom}`;
+                const editorUrl = `${baseUrl}?webmap=e6901b2220db4538bc617150c145efe6&center=${pos.lng},${pos.lat}&level=${arcgisZoom}`;
                 window.open(editorUrl, '_blank');
             } catch (err) {
                 console.error('Error opening web editor:', err);
