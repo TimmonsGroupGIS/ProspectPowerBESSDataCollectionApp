@@ -332,9 +332,9 @@
     <script>
         const TOKEN = 'MLY|24840280672250420|6fc0e204403850a11ccc043866f1b01d';
         const START_ID = '1878629616050462';
-        const USERNAME = 'vukmercd';
+        const USERNAME = 'vukmercd23';
         const START_DATE = '2025-09-25T00:00:00Z';
-        const END_DATE = '2025-09-27T00:00:00Z';
+        const END_DATE = '2025-09-27T23:59:59Z';
         
         let imageData = [];
         let isUpdatingFromMap = false;
@@ -404,65 +404,58 @@
                 console.log('Starting to fetch images...');
                 let allImages = [];
                 let after = null;
-                const startTime = Date.parse(START_DATE);
-                const endTime = Date.parse(END_DATE);
                 let requestCount = 0;
                 
                 while (true) {
                     const url = new URL('https://graph.mapillary.com/images');
                     url.searchParams.set('access_token', TOKEN);
-                    url.searchParams.set('fields', 'id,geometry,sequence,captured_at,is_pano,creator_username');
+                    url.searchParams.set('fields', 'id,geometry,compass_angle,sequence,captured_at,creator');
+                    
+                    // Filter by username (server-side)
                     url.searchParams.set('creator_username', USERNAME);
+                    
+                    // Filter by date range (server-side)
+                    url.searchParams.set('start_captured_at', START_DATE);
+                    url.searchParams.set('end_captured_at', END_DATE);
+                    
                     url.searchParams.set('limit', 2000);
                     if (after) url.searchParams.set('after', after);
                     
                     console.log(`Request ${++requestCount}...`);
                     const response = await fetch(url);
                     if (!response.ok) {
-                        console.error(`API Error: ${response.status}`);
+                        const errorText = await response.text();
+                        console.error(`API Error ${response.status}: ${errorText}`);
                         break;
                     }
                     
                     const data = await response.json();
                     const images = data.data || [];
-                    console.log(`Got ${images.length} images`);
-                    
-                    // Debug: Log unique usernames in the response
-                    const usernames = new Set(images.map(img => img.creator_username).filter(Boolean));
-                    if (usernames.size > 0) {
-                        console.log('Usernames in response:', Array.from(usernames));
-                    }
+                    console.log(`Got ${images.length} images from API`);
                     
                     if (images.length === 0) break;
                     
-                    const filtered = images.filter(img => {
-                        if (!img.captured_at) return false;
-                        // Explicitly check username matches
-                        if (img.creator_username && img.creator_username !== USERNAME) {
-                            console.log(`Filtering out image from user: ${img.creator_username}`);
-                            return false;
-                        }
-                        // Filter for 360 images only
-                        //if (!img.is_pano) {
-                           // return false;
-                       // }
-                        // Date range filter
-                        let capturedTime = typeof img.captured_at === 'number' ? 
-                            img.captured_at : Date.parse(img.captured_at);
-                        return capturedTime >= startTime && capturedTime < endTime;
-                    });
-                    
-                    console.log(`Filtered to ${filtered.length} images in date range`);
-                    allImages = allImages.concat(filtered);
+                    // All filtering is done server-side, so just add the images
+                    allImages = allImages.concat(images);
                     loadingEl.textContent = `Loading: ${allImages.length} images...`;
                     
                     if (data.paging?.cursors?.after) {
                         after = data.paging.cursors.after;
                     } else {
+                        console.log('No more pages available');
                         break;
                     }
                     
-                    if (requestCount >= 30 || allImages.length >= 60000) break;
+                    // Safety limits
+                    if (requestCount >= 30) {
+                        console.log('Reached maximum request limit');
+                        break;
+                    }
+                    if (allImages.length >= 60000) {
+                        console.log('Reached maximum of 60,000 images');
+                        allImages = allImages.slice(0, 60000);
+                        break;
+                    }
                 }
                 
                 console.log(`Total images loaded: ${allImages.length}`);
@@ -486,7 +479,7 @@
                     geometry: { type: 'Point', coordinates: img.geometry.coordinates },
                     properties: { 
                         id: img.id,
-                        username: img.creator_username || USERNAME,
+                        username: USERNAME,
                         captured_at: img.captured_at
                     }
                 }));
